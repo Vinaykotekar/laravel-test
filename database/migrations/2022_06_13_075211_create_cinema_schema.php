@@ -37,7 +37,73 @@ class CreateCinemaSchema extends Migration
      */
     public function up()
     {
-        throw new \Exception('implement in coding task 4, you can ignore this exception if you are just running the initial migrations.');
+        Schema::create('cinemas', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('cinema_name');
+            $table->string('owner_name');
+            $table->string('contact_details');
+            $table->string('year_established');
+        });
+
+        Schema::create('cinema_halls', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->foreign('cinema_id')->references('id')->on('cinemas')->onDelete('cascade');
+            $table->string('address');
+        });
+
+        Schema::create('customers', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('customer_name');
+        });
+
+        Schema::create('movies', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('movie_name');
+            $table->timestamp('release_date');
+            $table->smallInteger('duration_in_minutes');
+        });
+
+        Schema::create('movie_shows', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->integer('movie_id');
+            $table->integer('cinema_hall_id');
+            $table->unsignedFloat('commission_percentage');
+            $table->boolean('is_booked_out');
+            $table->timestamp('starts_at');
+            $table->timestamp('ends_at');
+        });
+
+
+        Schema::create('seat_types', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->integer('price');
+            $table->string('seat_type_name');
+        });
+
+        Schema::create('show_seats', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->foreign('show_id')->references('id')->on('movie_shows')->onDelete('cascade');
+            $table->foreign('seat_type')->references('id')->on('seat_types')->onDelete('cascade');
+            $table->boolean('is_available');
+        });
+
+
+        Schema::create('show_bookings', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->foreign('show_id')->references('id')->on('movie_shows')->onDelete('cascade');
+            $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
+            $table->timestamp('booked_on');
+            $table->unsignedFloat('amount');
+            $table->foreign('seat_id')->references('id')->on('show_seats')->onDelete('cascade');
+        });
+
+
+        Schema::create('show_bookings_to_seats', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->foreign('show_booking_id')->references('id')->on('show_bookings')->onDelete('cascade');
+            $table->foreign('show_seat_id')->references('id')->on('show_seats')->onDelete('cascade');
+        });
+
     }
 
     /**
@@ -47,5 +113,13 @@ class CreateCinemaSchema extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('cinemas');
+        Schema::dropIfExists('cinema_halls');
+        Schema::dropIfExists('customers');
+        Schema::dropIfExists('movies');
+        Schema::dropIfExists('movie_shows');
+        Schema::dropIfExists('seat_types');
+        Schema::dropIfExists('show_seats');
+        Schema::dropIfExists('show_bookings');
     }
 }
