@@ -94,6 +94,24 @@ class MenuController extends BaseController
      */
 
     public function getMenuItems() {
-        throw new \Exception('implement in coding task 3');
+        $list = MenuItem::all();
+
+        $roots = $list->whereNull('parent_id');
+
+        $this->arrange($roots, $list);
+
+        return $roots;
+
+    }
+
+    public function arrange($roots, $list)
+    {
+        foreach ($roots as $root) {
+            $root->children = $list->where('parent_id', $root->id)->values();
+
+            if($root->children->isNotEmpty()){
+                $this->arrange($root->children, $list); //process its children further
+            }
+        }
     }
 }
